@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Payroll;
 use App\Employee;
 use App\Role;
+use App\Addon;
 use Session;
 use Paginate;
 use Illuminate\Http\Request;
@@ -32,7 +33,7 @@ class PayrollController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request, $id){
-		
+
 	   $this->validate($request,[
 			'hours'=> 'required',
 			'rate'=>'required',
@@ -40,18 +41,54 @@ class PayrollController extends Controller
 		]);
 		
 	    $payroll = Payroll::create([
+      'from' => $request->from,
+      'to' => $request->to,
 			'hours' => $request->hours,
 			'rate' => $request->rate,
 			'over_time' => $request->over_time,
-			'employee_id' => $id
+			'employee_id' => $id,
 		]);
 		
-		$payroll->grossPay();
+
+		$gross = $payroll->grossPay();
 		$payroll->save();
-		
+    
+    $bonus_label = $request->bonus_label;
+    $bonus_value = $request->bonus_value;
+    $deduction_label = $request->deduction_label;
+    $deduction_value = $request->deduction_value;
+    $bonus=0;
+    $deduction=0;
+
+    for($i = 0; $i < count($bonus_label); $i++) {
+      $addon = Addon::create([
+          'label' => $bonus_label[$i],
+          'value' => $bonus_value[$i],
+          'type' => 'b',
+          'payroll_id' => $payroll->id,
+      ]);
+      $bonus+=$bonus_value[$i];
+    }
+
+    for($i = 0; $i < count($deduction_label); $i++) {
+
+      $addon = Addon::create([
+          'label' => $deduction_label[$i],
+          'value' => $deduction_value[$i],
+          'type' => 'd',
+          'payroll_id' => $payroll->id,
+      ]);
+      $deduction+=$deduction_value[$i];
+    }
+    $addon->save();
+    
+    $payroll->netPay($bonus, $deduction);
+    $payroll->save();
+
 		Session::flash('success', 'Payroll Created');
 		return redirect()->route('payrolls.show',['id'=>$id]);	
     }
+
 
     /**
      * Display the specified resource.
@@ -98,6 +135,7 @@ class PayrollController extends Controller
 		
 		$payroll->grossPay();
 		$payroll->save();
+    
 		
 		Session::flash('success', 'Payroll Updated ready for download');
 		return redirect()->route('payrolls.show',['id'=>$payroll->employee_id]);			

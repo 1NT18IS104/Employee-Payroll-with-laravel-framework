@@ -22,7 +22,13 @@ class DownloadController extends Controller
    
    
    public function singlePayroll($id){
-	    $pdf = PDF::loadview('payroll.download.singlepayroll',['payroll'=>Payroll::find($id)]);
-	   return $pdf->stream('employee.pdf');
+        $payroll = Payroll::find($id);
+        $bonus = $payroll->addons()->where('type', 'b')->get();
+        $deductions = $payroll->addons()->where('type', 'd')->get();
+        
+	    $pdf = PDF::loadview('payroll.download.singlepayroll',['payroll'=>$payroll,'bonus'=>$bonus,'deductions'=>$deductions]);
+	    return $pdf->stream('employee.pdf');
    }
+
+   
 }

@@ -8119,6 +8119,7 @@ button.close {
   display: none !important;
 }
 
+
 @media (max-width: 767px) {
   .visible-xs {
     display: block !important;
@@ -8349,4 +8350,5 @@ button.close {
     display: none !important;
   }
 }
+
 

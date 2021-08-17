@@ -16,11 +16,14 @@ class CreatePayrollsTable extends Migration
         Schema::create('payrolls', function (Blueprint $table) {
             $table->increments('id');
 			$table->integer('employee_id');
+            $table->date('from');
+            $table->date('to');
 			$table->boolean('over_time')->default(0);
 			$table->boolean('notified')->default(0);
 			$table->integer('hours')->nullable();
 			$table->integer('rate')->nullable();
 			$table->integer('gross')->nullable();	
+            $table->integer('net')->nullable();	
 			
 			$table->softDeletes();
             $table->timestamps();

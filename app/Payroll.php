@@ -11,13 +11,19 @@ class Payroll extends Model
 	
 	protected $dates = ['deleted_at'];
 	
-	protected $fillable=['employee_id','over_time','hours','rate','total'];
+	protected $fillable=['employee_id','over_time','hours','rate','from','to',];
 	
+	public $with = ['addons'];
 	
 	public function employee(){
 		return $this->belongsTo('App\Employee');
 	}
+
+	public function addons(){
+		return $this->hasMany('App\Addon');
+	}
 	
+
 	public function grossPay(){
 		$calc = 0;
 		if($this->employee->full_time && !$this->over_time){
@@ -33,6 +39,11 @@ class Payroll extends Model
 		}
 		return $this->gross = 0;
 	}
+
+	public function netPay($bonus, $deduction){
+		return $this->net = $this->gross+$bonus-$deduction;
+	}
+
 	
 	
 }
